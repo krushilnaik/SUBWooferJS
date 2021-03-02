@@ -14,3 +14,5 @@ class OverrideTag {
 		this.isValid = false;
 	}
 }
+
+module.exports = OverrideTag;
