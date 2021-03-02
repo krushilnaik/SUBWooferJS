@@ -9,20 +9,41 @@ class Time {
 		if (typeof value === "number") {
 			this.timestamp = value;
 		} else if (typeof value == "string") {
+			const timeArray = value.split(/[.:]/g).map(num => Number(num));
 
-			let sampleValue = "0:00:11.69";
+			const conversionUnits = [60, 60, 100, 1];
 
-			let sections = sampleValue.split(/[.:]/);
-			sections[sections.length - 1] = sections[sections.length - 1].padEnd(2, "0");
-
-			let units = [60, 60, 100, 1];
-			let factor = units.reduce((a, b) => a*b);
-
-			for (const [i, num] of sections.entries()) {
-				let temp = Number(num);
-				this.timestamp += (temp * factor);
-				factor /= units[i];
+			for (const [i, segment] of timeArray.entries()) {
+				const weight = conversionUnits.slice(i).reduce((a, b) => a*b);
+				this.timestamp += segment * weight;
 			}
 		}
 	}
+
+	/**
+	 * Get a human-readable string representation of Time
+	 */
+	toString() {
+		const conversionUnits = [60, 60, 100];
+		const seperators = [":", ":", "."];
+
+		let string = "";
+		let remainder = this.timestamp;
+
+		for (const [i, sep] of seperators.entries()) {
+			const weight = conversionUnits.slice(i).reduce((a, b) => a*b);
+			const segment = Math.floor(remainder / weight);
+
+			string += String(segment).padStart(2, "0");
+			string += sep;
+
+			remainder %= weight;
+		}
+
+		string += String(remainder);
+
+		return string;
+	}
 }
+
+module.exports = Time;
