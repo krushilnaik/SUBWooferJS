@@ -44,6 +44,32 @@ class Time {
 
 		return string;
 	}
+
+	/**
+	 * @param {(string|number|Time)} time amount of time to be added
+	 */
+	add(time) {
+		if (typeof time === "number") {
+			return new Time(this.timestamp + time);
+		}else if (typeof time === "string") {
+			return new Time(this.timestamp + (new Time(time)).timestamp);
+		}
+
+		return new Time(this.timestamp + time.timestamp);
+	}
+
+	/**
+	 * @param {(string|number|Time)} time amount of time to be subtracted
+	 */
+	subtract(time) {
+		if (typeof time === "number") {
+			return new Time(this.timestamp - time);
+		}else if (typeof time === "string") {
+			return new Time(this.timestamp - (new Time(time).timestamp));
+		}
+
+		return new Time(this.timestamp - time.timestamp);
+	}
 }
 
 module.exports = Time;
