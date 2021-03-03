@@ -6,7 +6,7 @@ const { VariableType } = require("../src/Enumerables");
  * @param {string} text 
  * @param {string} delimiter 
  */
-function splitTags(text, delimiter) {
+function splitTags(text, delimiter=",") {
 	/**
 	 * @type {string[]}
 	 */
@@ -113,8 +113,8 @@ class OverrideTagParser {
 					tags.push(new OverrideTag(string, overrides));
 
 					for (let i = 0; i < tags[tags.length - 1].parameters.length; i++) {
-						if (tags[tags.length - 1].parameters[i] === VariableType.OVERRIDE) {
-							// 
+						if (tags[tags.length - 1].parameters[i].varType === VariableType.OVERRIDE) {
+							
 						}
 					}
 				} catch (error) {
@@ -125,4 +125,4 @@ class OverrideTagParser {
 	}
 }
 
-module.exports = OverrideTagParser;
+module.exports = { OverrideTagParser, splitTags };

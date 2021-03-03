@@ -1,4 +1,5 @@
 const { ParameterClass: PC, ParameterOptional: PO, VariableType: VT } = require("./Enumerables");
+const { splitTags } = require("../src/OverrideTagParser");
 
 class OverrideTagParameter {
 	/**
@@ -52,6 +53,7 @@ class OverrideTag {
 	 */
 	constructor(rawText, overloadings=[]) {
 		this.name = overloadings !== [] ? overloadings[0].name : rawText;
+		this.varType = VT.OVERRIDE;
 
 		/**
 		 * @type {OverrideTagParameter[]}
@@ -90,7 +92,51 @@ class OverrideTag {
 		this.push(new OverrideTagParameter(variableType, parameterClass, parameterOptional));
 	}
 
-	getVariableType() {return VT.OVERRIDE;}
+	/**
+	 * 
+	 * @param {string} text 
+	 * @param {OverrideTag[]} templates 
+	 */
+	parseParameters(text, templates) {
+		this.parameters = [];
+
+		let foundParams = splitTags(text);
+
+		if (foundParams.length === 0) {
+			return;
+		}
+
+		this.commaSeperated = (foundParams.length > 1);
+
+		const optionality = 1 << (foundParams.length - 1);
+		const whichTemplate = (foundParams.length === templates[1].length) ? 1 : 0;
+
+		for (const [i, param] of templates[whichTemplate].entries()) {
+			this.push(param);
+
+			if (!(param.optionFlag & optionality) || i >= foundParams.length) {
+				continue;
+			}
+
+			if (this.parameters[this.length - 1].varType === VT.OVERRIDE) {
+				this.parenthetical = true;
+				this.parameters[this.length - 1].setValue(foundParams[i]);
+			} else {
+				this.parenthetical = this.commaSeperated;
+				this.parameters[this.length - 1].setValue(foundParams[i])
+			}
+		}
+	}
+
+	/**
+	 * Makeshift copy constructor
+	 */
+	copy() {
+		let temp = new OverrideTag(this.name);
+		temp.parameters = [...this.parameters];
+
+		return temp;
+	}
 }
 
 module.exports = OverrideTag;
