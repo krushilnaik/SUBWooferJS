@@ -1,8 +1,8 @@
 const VariableType = {
-	INT: "int",
-	FLOAT: "float",
-	TEXT: "text",
-	BOOLEAN: "boolean",
+	INT: Number,
+	FLOAT: Number,
+	TEXT: String,
+	BOOLEAN: Number,
 	OVERRIDE: "override"
 };
 

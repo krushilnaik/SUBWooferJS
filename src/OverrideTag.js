@@ -1,69 +1,118 @@
 const { ParameterClass: PC, ParameterOptional: PO, VariableType: VT } = require("./Enumerables");
-const { splitTags } = require("../src/OverrideTagParser");
 
-class OverrideTagParameter {
+/**
+ * @param {string} text 
+ * @param {string} delimiter 
+ */
+function splitTags(text, delimiter=",") {
 	/**
-	 * @param {string} varType
-	 * @param {number} paramClass
-	 * @param {number} optionFlag
+	 * @type {string[]}
 	 */
-	constructor(varType, paramClass, optionFlag=PO.NOT_OPTIONAL) {
-		this.varType = varType;
-		this.optionFlag = optionFlag;
-		this.parameterClass = paramClass;
+	let parameterList = [];
 
-		/**
-		 * @type {string | number | OverrideTag}
-		 */
-		this.value = [VT.INT, VT.FLOAT, VT.BOOLEAN].includes(varType) ? 0 : "";
+	if (!text || text === "()") {
+		return parameterList;
 	}
 
-	[Symbol.iterator]() {
-		if (this.value instanceof OverrideTag) {
-			return this.value.parameters.values();
-		} else {
-			return [this.value].values();
+	if (text[0] !== "(") {
+		parameterList.push(text);
+		return parameterList;
+	}
+
+	let level = 0, prev = 1;
+	let removeIndex = -1;
+
+	for (let i = 1; i < text.length - 1; i++) {
+		const c = text[i];
+
+		if (c === "(") {
+			level += 1;
+		} else if (c === ")") {
+			level -= 1;
+
+			if (level === -1) {
+				removeIndex = i;
+				level += 1;
+			}
+		} else if (c === delimiter && level === 0) {
+			let temp = text.slice(prev, i);
+
+			if (removeIndex !== -1) {
+				temp = text.slice(prev, removeIndex);
+				removeIndex = -1;
+			}
+
+			prev = i;
+
+			parameterList.push(temp.replace(/^\,+|\,+$/g, ''));
 		}
 	}
 
+	parameterList.push(text.slice(prev, text.length - 1).replace(/^\,+|\,+$/g, ''));
+
+	if (delimiter === "\\") {
+		while (parameterList[0].trim() === "") {
+			parameterList = parameterList.slice(1);
+		}
+	}
+
+	return parameterList;
+}
+
+class OverrideTagParameter {
 	/**
-	 * 
-	 * @param {string | number | OverrideTag | OverrideTagParameter} value 
+	 * @param {any} varType 
+	 * @param {number} paramClass 
+	 * @param {number} optionFlag 
+	 */
+	constructor(varType, paramClass, optionFlag) {
+		this.varType = varType;
+		this.paramClass = paramClass;
+		this.optionFlag = optionFlag;
+		this.value = null;
+	}
+
+	/**
+	 * @param {string} value 
 	 */
 	setValue(value) {
-		if (value instanceof OverrideTagParameter) {
-			this.varType = value.varType;
-			this.optionFlag = value.optionFlag;
-			this.parameterClass = value.parameterClass;
-			this.value = value.value;
-		} else if (value instanceof OverrideTag) {
-			this.value = value;
+		if (this.varType !== VT.OVERRIDE) {
+			this.value = this.varType(value);
 		} else {
-			// if ([VT.INT, VT.FLOAT, VT.BOOLEAN].includes(this.varType)) {
-			this.value = Number(value);
-			// }
+			this.value = value;
+		}
+	}
+
+	toString() {
+		if (Array.isArray(this.value)) {
+			return this.value.join("");
+		} else {
+			return String(this.value);
 		}
 	}
 }
 
 class OverrideTag {
 	/**
-	 * @param {string} rawText a single tag (with potential sub-tag parameters)
-	 * @param {OverrideTag[]} overloadings list of possible "function calls" for a tag if there's more than one
+	 * @param {string} text 
+	 * @param {OverrideTag[]} overrides 
 	 */
-	constructor(rawText, overloadings=[]) {
-		this.name = overloadings !== [] ? overloadings[0].name : rawText;
-		this.varType = VT.OVERRIDE;
-
+	constructor(text, overrides=[]) {
 		/**
 		 * @type {OverrideTagParameter[]}
 		 */
 		this.parameters = [];
 		this.length = 0;
 
-		this.parenthetical = false;
 		this.commaSeperated = false;
-		this.isValid = false;
+		this.needsParentheses = false;
+
+		if (overrides.length === 0) {
+			this.tag = text;
+		} else {
+			this.tag = overrides[0].tag || "";
+			this.parseParameters(text.slice(this.tag.length - 1), overrides);
+		}
 	}
 
 	[Symbol.iterator]() {
@@ -71,72 +120,67 @@ class OverrideTag {
 	}
 
 	/**
-	 * 
-	 * @param {OverrideTagParameter} param
+	 * @param {OverrideTagParameter} parameter 
 	 */
-	push(param) {
-		this.parameters.push(param);
+	push(parameter) {
+		this.parameters.push(parameter);
 		this.length++;
 	}
 
-	entries() {
-		return this.parameters.entries();
-	}
-
-	/**
-	 * @param {string} variableType
-	 * @param {number} parameterClass
-	 * @param {number} parameterOptional 
-	 */
-	addParameter(variableType, parameterClass=PC.NORMAL, parameterOptional=PO.NOT_OPTIONAL) {
-		this.push(new OverrideTagParameter(variableType, parameterClass, parameterOptional));
-	}
-
 	/**
 	 * 
-	 * @param {string} text 
-	 * @param {OverrideTag[]} templates 
+	 * @param {any} varType 
+	 * @param {number} paramClass 
+	 * @param {number} optionFlag 
 	 */
-	parseParameters(text, templates) {
+	addParameter(varType, paramClass=PC.NORMAL, optionFlag=PO.NOT_OPTIONAL) {
+		this.push(new OverrideTagParameter(varType, paramClass, optionFlag));
+	}
+
+	/**
+	 * @param {string} rawText - string containing all the parameters this tag will have
+	 * @param {OverrideTag[]} templates - typically only has one template in it, aside from \clip and \iclip
+	 */
+	parseParameters(rawText, templates) {
 		this.parameters = [];
 
-		let foundParams = splitTags(text);
+		const groups = splitTags(rawText);
 
-		if (foundParams.length === 0) {
-			return;
+		if (groups.length > 1) {
+			this.commaSeperated = true;
 		}
 
-		this.commaSeperated = (foundParams.length > 1);
+		const numParams = groups.length;
+		const parsFlag = 1 << (numParams - 1);
 
-		const optionality = 1 << (foundParams.length - 1);
-		const whichTemplate = (foundParams.length === templates[1].length) ? 1 : 0;
+		const templateNumber = (this.tag.includes("clip") && numParams != 4) ? 1 : 0;
 
-		for (const [i, param] of templates[whichTemplate].entries()) {
-			this.push(param);
+		let i = 0;
+		for (const param of templates[templateNumber]) {
+			if (this.commaSeperated || param.varType === VT.OVERRIDE) {
+				this.needsParentheses = true;
+			}
 
-			if (!(param.optionFlag & optionality) || i >= foundParams.length) {
+			const { varType, paramClass, optionFlag } = param;
+			this.push(new OverrideTagParameter(varType, paramClass, optionFlag));
+
+			if (!(optionFlag & parsFlag) || i >= numParams) {
 				continue;
 			}
 
-			if (this.parameters[this.length - 1].varType === VT.OVERRIDE) {
-				this.parenthetical = true;
-				this.parameters[this.length - 1].setValue(foundParams[i]);
-			} else {
-				this.parenthetical = this.commaSeperated;
-				this.parameters[this.length - 1].setValue(foundParams[i])
-			}
+			this.parameters[this.length - 1].setValue(groups[i++]);
 		}
 	}
 
-	/**
-	 * Makeshift copy constructor
-	 */
-	copy() {
-		let temp = new OverrideTag(this.name);
-		temp.parameters = [...this.parameters];
+	toString() {
+		let string = this.tag;
 
-		return temp;
+		if (this.needsParentheses) string += "(";
+		string += this.parameters.filter(param => param.value !== null).join(this.commaSeperated ? "," : "");
+		if (this.needsParentheses) string += ")";
+
+		return string;
 	}
 }
 
-module.exports = OverrideTag;
+module.exports = { OverrideTag, splitTags };
