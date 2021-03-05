@@ -145,16 +145,20 @@ class OverrideTag {
 		this.parameters = [];
 
 		const groups = splitTags(rawText);
+		const numParams = groups.length;
 
-		if (groups.length > 1) {
+		if (numParams > 1) {
 			this.commaSeperated = true;
 		}
 
-		const numParams = groups.length;
 		const parsFlag = 1 << (numParams - 1);
 
-		const templateNumber = (this.tag.includes("clip") && numParams != 4) ? 1 : 0;
-
+		let templateNumber = 0;
+		
+		if (templates.length > 1 && numParams > templates[0].length) {
+			templateNumber++;
+		}
+		
 		let i = 0;
 		for (const param of templates[templateNumber]) {
 			if (this.commaSeperated || param.varType === VT.OVERRIDE) {

@@ -81,17 +81,17 @@ function loadValidTags() {
 	// \clip([<scale>,]<some drawings>)
 	names.push("\\\\clip");
 	valids.push(new OverrideTag("\\\\clip"));
-	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_X);
-	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_Y);
-	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_X);
-	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_Y);
+	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.NORMAL, ParameterOptional.OPTIONAL_2);
+	valids[valids.length - 1].addParameter(VariableType.TEXT, ParameterClass.DRAWING);
 
 
 	// \clip([<scale>,]<some drawings>)
 	names.push("\\\\clip");
 	valids.push(new OverrideTag("\\\\clip"));
-	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.NORMAL, ParameterOptional.OPTIONAL_2);
-	valids[valids.length - 1].addParameter(VariableType.TEXT, ParameterClass.DRAWING);
+	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_X);
+	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_Y);
+	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_X);
+	valids[valids.length - 1].addParameter(VariableType.INT, ParameterClass.ABSOLUTE_POS_Y);
 
 
 	// \iclip(<x1>,<y1>,<x2>,<y2>)
