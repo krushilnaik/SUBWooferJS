@@ -57,6 +57,37 @@ class FileReader {
 	}
 }
 
+class FileWriter {
+	/**
+	 * @param {string} filename 
+	 */
+	constructor(filename) {
+		this.file = fs.createWriteStream(filename, "a");
+
+		this.writeSingleLine("[Script Info]")
+	}
+
+	/**
+	 * @param {string} line 
+	 */
+	writeSingleLine(line) {
+		this.file.write(line + "\n");
+	}
+
+	/**
+	 * @param {string[]} lines 
+	 */
+	writeMultipleLines(lines) {
+		for (const line in lines) {
+			this.writeSingleLine(line);
+		}
+	}
+
+	close() {
+		this.file.close();
+	}
+}
+
 class File {
 	/**
 	 * @param {string} path 
@@ -70,6 +101,11 @@ class File {
 		if (path !== null) {
 			const reader = new FileReader();
 			const temp = reader.readFile(path);
+
+			this.INFO = temp.INFO;
+			this.STYLES = temp.STYLES;
+			this.PROPERTIES = temp.PROPERTIES;
+			this.EVENTS = temp.EVENTS;
 		}
 	}
 
