@@ -8,7 +8,7 @@ class Style {
 		if (line.length === 0) return;
 
 		const parts = line.split(/: |,/g);
-		
+
 		this.name = parts[0];
 		this.fontName = parts[1];
 		this.fontSize = Number(parts[2]);
