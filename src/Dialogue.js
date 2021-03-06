@@ -33,7 +33,7 @@ class DialogueBlock {
 		switch (this.blockType) {
 			case DialogueBlockType.OVERRIDE:
 				if (Array.isArray(this.content)) {
-					return `{${this.content.map(tag => tag.toString())}}`;
+					return `{${this.content.map(tag => tag.toString()).join("")}}`;
 				}
 				break;
 			case DialogueBlockType.COMMENT:
