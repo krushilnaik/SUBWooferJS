@@ -177,7 +177,7 @@ class OverrideTag {
 	}
 
 	toString() {
-		let string = this.tag;
+		let string = this.tag.replace("\\\\", "\\");
 
 		if (this.needsParentheses) string += "(";
 		string += this.parameters.filter(param => param.value !== null).join(this.commaSeperated ? "," : "");
