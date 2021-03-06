@@ -33,6 +33,23 @@ class Style {
 		this.marginVertical = Number(parts[21]);
 		this.encoding = Number(parts[22]);
 	}
+
+
+	toString() {
+		let string = "Style: ";
+		string += [
+			this.name, this.fontName, this.fontSize,
+			this.primaryColor.toString(), this.secondaryColor.toString(),
+			this.outlineColor.toString(), this.backColor.toString(),
+			this.bold, this.italic, this.underline, this.strikeout,
+			this.scaleX, this.scaleY, this.spacing, this.angle,
+			this.borderStyle, this.outline, this.shadow,
+			this.alignment, this.marginLeft, this.marginRight, this.marginVertical,
+			this.encoding
+		].join(",");
+		
+		return string;
+	}
 }
 
 module.exports = Style;

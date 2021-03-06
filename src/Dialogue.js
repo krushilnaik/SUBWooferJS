@@ -3,7 +3,6 @@ const { DialogueBlockType } = require("./Enumerables")
 const loadValidTags = require("./loadValidTags");
 const { OverrideTagParser } = require("./OverrideTagParser");
 const { OverrideTag } = require("./OverrideTag");
-// const Style = require("./Style");
 
 const parser = new OverrideTagParser(loadValidTags());
 
@@ -29,6 +28,20 @@ class DialogueBlock {
 				this.scale = level;
 		}
 	}
+
+	toString() {
+		switch (this.blockType) {
+			case DialogueBlockType.OVERRIDE:
+				if (Array.isArray(this.content)) {
+					return `{${this.content.map(tag => tag.toString())}}`;
+				}
+				break;
+			case DialogueBlockType.COMMENT:
+				return `{${this.content}}`;
+			default:
+				return this.content;
+		}
+	}
 }
 
 class Dialogue {
@@ -49,23 +62,29 @@ class Dialogue {
 		this.marginRight = Number(groups[7]);
 		this.marginVertical = Number(groups[8]);
 		this.effect = groups[9];
-		this.content = groups[10];
 
-		if (!this.isComment) {
-			this.parseDialogueBlocks();
-		}
+		/**
+		 * @type {DialogueBlock[]}
+		 */
+		this.content = [];
 
-		console.log(this.content);
+		this.parseDialogueBlocks(groups[10]);
 	}
 
-	parseDialogueBlocks() {
-		let blocks = [];
+	/**
+	 * @param {string} content 
+	 */
+	parseDialogueBlocks(content) {
+		if (content.trim().length === 0) return;
 
-		if (this.content.trim().length === 0) {
-			return blocks;
+		if (this.isComment) {
+			this.content = [new DialogueBlock(DialogueBlockType.PLAIN, content)];
+			return;
 		}
 
-		const groups = this.content.trim().split(/(.*?)(\{.*?\})(.*?)/g).filter(str => str.length !== 0);
+		let blocks = [];
+
+		const groups = content.trim().split(/(.*?)(\{.*?\})(.*?)/g).filter(str => str.length !== 0);
 
 		let drawingLevel = 0;
 
@@ -94,6 +113,20 @@ class Dialogue {
 				}
 			}
 		}
+
+		this.content = blocks;
+	}
+
+	toString() {
+		let string = this.isComment ? "Comment: " : "Dialogue: ";
+
+		string += [
+			this.layer, this.startTime.toString(), this.endTime.toString(),
+			this.style, this.name, this.marginLeft, this.marginRight, this.marginVertical,
+			this.effect, this.content.map(block => block.toString()).join("")
+		].join(",");
+
+		return string;
 	}
 }
 
