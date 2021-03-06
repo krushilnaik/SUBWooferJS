@@ -32,7 +32,7 @@ class FileReader {
 		switch (this.parseMode) {
 			case "INFO":
 				if (line.startsWith(";") || line.startsWith("Collisions:")) return;
-				
+
 				const pos = line.indexOf(":");
 
 				if (pos === -1) return;
@@ -114,7 +114,17 @@ class File {
 	 * @param {string} value 
 	 */
 	setScriptInfo(key, value) {
-		// TODO
+		if (Object.keys(this.INFO).includes(key)) {
+			switch (key) {
+				case "WrapStyle":
+				case "PlayResX":
+				case "PlayResY":
+					this.INFO[key] = Number(value);
+					break;
+				default:
+					this.INFO[key] = value;
+			}
+		}
 	}
 }
 
