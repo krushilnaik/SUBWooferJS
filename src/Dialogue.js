@@ -1,9 +1,9 @@
 const Time = require("./Time");
 const { DialogueBlockType } = require("./Enumerables")
-const loadValidTags = require("./loadValidTags");
 const { OverrideTagParser } = require("./OverrideTagParser");
 const { OverrideTag } = require("./OverrideTag");
 
+const loadValidTags = require("./loadValidTags");
 const parser = new OverrideTagParser(loadValidTags());
 
 class DialogueBlock {

@@ -154,11 +154,11 @@ class OverrideTag {
 		const parsFlag = 1 << (numParams - 1);
 
 		let templateNumber = 0;
-		
+
 		if (templates.length > 1 && numParams > templates[0].length) {
 			templateNumber++;
 		}
-		
+
 		let i = 0;
 		for (const param of templates[templateNumber]) {
 			if (this.commaSeperated || param.varType === VT.OVERRIDE) {
