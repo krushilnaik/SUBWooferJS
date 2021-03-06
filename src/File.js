@@ -1,6 +1,6 @@
-const Time = require("./Time");
-const { DialogueBlockType } = require("./Enumerables");
+const { Dialogue } = require("./Dialogue");
 const PropertyHandler = require("./PropertyHandler");
+const Style = require("./Style");
 
 const fs = require("fs");
 
@@ -192,4 +192,4 @@ class File {
 	}
 }
 
-module.exports = File;
+module.exports = { File, FileReader, FileWriter };

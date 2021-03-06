@@ -97,4 +97,4 @@ class Dialogue {
 	}
 }
 
-module.exports = Dialogue;
+module.exports = { Dialogue, DialogueBlock };
