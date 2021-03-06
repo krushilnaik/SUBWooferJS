@@ -25,8 +25,10 @@ class FileReader {
 			} else if (line.toLowerCase().includes("[events]")) {
 				this.parseMode = "EVENTS";
 			} else if (line.toLowerCase().includes("[aegisub project garbage]")) {
-				this.parseMode = "META";
+				this.parseMode = "METADATA";
 			}
+
+			return;
 		}
 
 		switch (this.parseMode) {
@@ -37,9 +39,20 @@ class FileReader {
 
 				if (pos === -1) return;
 
-				let [key, value] = [line.slice(0, pos), line.slice(pos+1).trim()];
+				this.target.setScriptInfo(line.slice(0, pos), line.slice(pos+1).trim());
+			case "STYLE":
+				if (!data.startsWith("Style: ")) return;
 
-				this.target.setScriptInfo(key, value);
+				this.target.STYLES.push(new Style(data.slice(7)));
+				break;
+			case "EVENTS":
+				if (!data.startsWith("Comment: ") || !data.startsWith("Dialogue: ")) {
+					return;
+				}
+
+				this.target.EVENTS.push(new Dialogue(data));
+			default:
+				break;
 		}
 	}
 
@@ -50,6 +63,7 @@ class FileReader {
 		const file = fs.readFileSync(filename).toString().split("\n");
 
 		for (const line of file) {
+			if (line.trim().length === 0) continue;
 			this.readLine(line);
 		}
 
@@ -60,11 +74,13 @@ class FileReader {
 class FileWriter {
 	/**
 	 * @param {string} filename 
+	 * @param {File} fileObject
 	 */
-	constructor(filename) {
-		this.file = fs.createWriteStream(filename, "a");
+	constructor(filename, fileObject) {
+		fs.writeFileSync(filename, "");
 
-		this.writeSingleLine("[Script Info]")
+		this.file = fs.createWriteStream(filename, "a");
+		this.target = fileObject;
 	}
 
 	/**
@@ -72,6 +88,27 @@ class FileWriter {
 	 */
 	writeSingleLine(line) {
 		this.file.write(line + "\n");
+	}
+
+	writeFile() {
+		this.writeSingleLine("[Script Info]");
+		this.writeMultipleLines(
+			Object.entries(this.target.INFO).map(
+				info => info.join(": ")
+			)
+		);
+
+		this.writeSingleLine("");
+
+		this.writeSingleLine("[V4+ Styles]");
+		this.writeSingleLine("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding");
+		this.writeMultipleLines(this.target.STYLES.map(style => style.toString()));
+
+		this.writeSingleLine("");
+
+		this.writeSingleLine("[Events]");
+		this.writeSingleLine("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text");
+		this.writeMultipleLines(this.target.EVENTS.map(event => event.toString()));
 	}
 
 	/**
@@ -93,10 +130,37 @@ class File {
 	 * @param {string} path 
 	 */
 	constructor(path=null) {
-		this.INFO = [];
+		/**
+		 * @typedef {object} Info
+		 * @property {string} ScriptType
+		 * @property {number} WrapStyle
+		 * @property {string} ScaledBorderAndShadow
+		 * @property {number} PlayResX
+		 * @property {number} PlayResY
+		 * @property {string} YCbCrMatrix
+		 */
+
+		/**
+		 * @type {Info}
+		 */
+		this.INFO = {
+			ScriptType: "v4.00+",
+			WrapStyle: 0,
+			ScaledBorderAndShadow: "yes",
+			PlayResX: 1920,
+			PlayResY: 1080,
+			YCbCrMatrix: "None"
+		};
+
+		/**
+		 * @type {Style[]}
+		 */
 		this.STYLES = [];
+
+		/**
+		 * @type {Dialogue[]}
+		 */
 		this.EVENTS = [];
-		this.PROPERTIES = [];
 
 		if (path !== null) {
 			const reader = new FileReader();
