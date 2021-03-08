@@ -57,10 +57,16 @@ class Color {
 	 * @param {string} mode "style" or "override"
 	 */
 	toString(mode="style") {
+		/**
+		 * @param {number} num 
+		 * @returns {string} - hex representation of input number
+		 */
+		const hexify = (num) => num.toString(16).padStart(2, "0");
+
 		if (mode === "style") {
-			return `&H${[this.alpha, this.blue, this.green, this.red].map(num => num.toString(16)).join("")}&`;
+			return `&H${[this.alpha, this.blue, this.green, this.red].map(hexify).join("")}&`;
 		} else if (mode === "override") {
-			return `&H${[this.blue, this.green, this.red].map(num => num.toString(16)).join("")}&`;
+			return `&H${[this.blue, this.green, this.red].map(hexify).join("")}&`;
 		}
 
 		throw new Error("invalid mode for Color.toString(): must be either 'style' or 'override'");
