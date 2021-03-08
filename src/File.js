@@ -190,6 +190,15 @@ class File {
 			}
 		}
 	}
+
+	/**
+	 * @param {string} filename 
+	 */
+	writeFile(filename) {
+		const writer = new FileWriter(filename, this);
+		writer.writeFile();
+		writer.close();
+	}
 }
 
 module.exports = { File, FileReader, FileWriter };
