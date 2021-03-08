@@ -46,7 +46,7 @@ class FileReader {
 				this.target.STYLES.push(new Style(data.slice(7)));
 				break;
 			case "EVENTS":
-				if (!data.startsWith("Comment: ") || !data.startsWith("Dialogue: ")) {
+				if (!data.startsWith("Comment: ") && !data.startsWith("Dialogue: ")) {
 					return;
 				}
 
@@ -77,9 +77,11 @@ class FileWriter {
 	 * @param {File} fileObject
 	 */
 	constructor(filename, fileObject) {
+		// clear the file before opening the write stream
+		// so we're not appending to a pre-existing file
 		fs.writeFileSync(filename, "");
 
-		this.file = fs.createWriteStream(filename, "a");
+		this.file = fs.createWriteStream(filename);
 		this.target = fileObject;
 	}
 
@@ -115,7 +117,7 @@ class FileWriter {
 	 * @param {string[]} lines 
 	 */
 	writeMultipleLines(lines) {
-		for (const line in lines) {
+		for (const line of lines) {
 			this.writeSingleLine(line);
 		}
 	}
@@ -170,6 +172,7 @@ class File {
 			this.STYLES = temp.STYLES;
 			this.PROPERTIES = temp.PROPERTIES;
 			this.EVENTS = temp.EVENTS;
+			console.log(`Opened file '${path}' with ${this.EVENTS.length} events.`);
 		}
 	}
 

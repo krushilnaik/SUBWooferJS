@@ -47,7 +47,7 @@ class Style {
 			this.alignment, this.marginLeft, this.marginRight, this.marginVertical,
 			this.encoding
 		].join(",");
-		
+
 		return string;
 	}
 }

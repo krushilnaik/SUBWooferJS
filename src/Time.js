@@ -40,7 +40,7 @@ class Time {
 			remainder %= weight;
 		}
 
-		string += String(remainder);
+		string += String(remainder).padStart(2, "0");
 
 		return string;
 	}
