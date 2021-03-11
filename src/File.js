@@ -1,5 +1,4 @@
 const { Dialogue } = require("./Dialogue");
-const PropertyHandler = require("./PropertyHandler");
 const Style = require("./Style");
 
 const fs = require("fs");
@@ -7,9 +6,6 @@ const fs = require("fs");
 class FileReader {
 	constructor() {
 		this.target = new File();
-		this.propertyHandler = new PropertyHandler();
-
-		this.target.PROPERTIES = this.propertyHandler.getDefaults();
 
 		this.parseMode = "INFO";
 	}
@@ -170,7 +166,6 @@ class File {
 
 			this.INFO = temp.INFO;
 			this.STYLES = temp.STYLES;
-			this.PROPERTIES = temp.PROPERTIES;
 			this.EVENTS = temp.EVENTS;
 			console.log(`Opened file '${path}' with ${this.EVENTS.length} events.`);
 		}
