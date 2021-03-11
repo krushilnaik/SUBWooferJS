@@ -187,4 +187,4 @@ class OverrideTag {
 	}
 }
 
-module.exports = { OverrideTag, splitTags };
+module.exports = { OverrideTag, OverrideTagParameter, splitTags };
